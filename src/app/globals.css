@@ -1,0 +1,113 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+@theme inline {
+  /* Let config override */
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Smooth scrolling globally */
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Selection color */
+  ::selection {
+    background: rgba(124, 58, 237, 0.15);
+    color: #1E1B2E;
+  }
+}
+
+/* Soft overlay for editorial images on light backgrounds */
+.chiaroscuro-overlay {
+  background: linear-gradient(90deg, rgba(250,250,254,0.95) 0%, rgba(250,250,254,0.6) 40%, rgba(250,250,254,0) 100%);
+}
+.chiaroscuro-img {
+  filter: contrast(1.05) brightness(1) saturate(1.05);
+  transition: filter 0.5s ease, transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.chiaroscuro-img:hover {
+  filter: contrast(1) brightness(1.02) saturate(1.1);
+}
+
+/* Soft glow behind headings / hero */
+.radial-glow {
+  position: relative;
+}
+.radial-glow::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(167,139,250,0.08) 0%, rgba(167,139,250,0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Accent borders */
+.violet-border-top {
+  border-top: 2px solid #7C3AED;
+}
+.hairline-violet {
+  border: 1px solid #DDD6FE;
+}
+
+/* Masonry layout */
+.masonry-grid {
+  columns: 1;
+  column-gap: 24px;
+}
+@media (min-width: 768px) {
+  .masonry-grid {
+    columns: 2;
+  }
+}
+@media (min-width: 1024px) {
+  .masonry-grid {
+    columns: 3;
+  }
+}
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 24px;
+}
+
+/* Gallery overlay for light theme */
+.image-overlay {
+  background: linear-gradient(to top, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 50%);
+}
+
+/* Input focus */
+.input-border-focus:focus-within {
+  border-color: #7C3AED !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Smooth card hover lift */
+.hover-lift {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.12);
+}
+
+/* Hide scrollbar for horizontal chip rows */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
