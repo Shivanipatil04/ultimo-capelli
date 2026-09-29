@@ -226,11 +226,10 @@ export default function WigPreviewer() {
             <button
               key={wig.name}
               onClick={() => setActiveWig(i)}
-              className={`p-4 rounded border text-left transition-all duration-300 ${
-                i === activeWig
+              className={`p-4 rounded border text-left transition-all duration-300 ${i === activeWig
                   ? "border-accent-glow bg-primary/20 shadow-lg shadow-primary/10"
                   : "border-white/10 bg-white/5 hover:border-accent-glow/50"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3 mb-2">
                 <div

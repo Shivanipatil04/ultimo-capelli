@@ -10,11 +10,29 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
+import Link from "next/link";
+
 // Dynamic imports for R3F components (SSR disabled)
 const HeroHead = dynamic(() => import("@/components/HeroHead"), { ssr: false });
 const WigPreviewer = dynamic(() => import("@/components/WigPreviewer"), { ssr: false });
 
 export default function Home() {
+  const [services, setServices] = useState<any[]>([
+    { icon: "content_cut", title: "Hair Patch", desc: "Targeted restoration for localized balding, specifically crown thinning or receding hairlines. Custom-molded to blend seamlessly with your existing density and texture.", slug: "hair-patch" },
+    { icon: "person", title: "Hair Wig", desc: "Comprehensive coverage for advanced stages of hair loss. Constructed with breathable, micro-mesh bases replicating a natural scalp.", slug: "hair-wig" },
+    { icon: "spa", title: "Maintenance", desc: "Exclusive clinical maintenance ensuring the longevity and pristine condition of your system. Includes cleansing, adjustments, and styling.", slug: "maintenance" },
+  ]);
+
+  useEffect(() => {
+    fetch('/api/services')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const active = data.filter((s: any) => s.isActive);
+          if (active.length > 0) setServices(active);
+        }
+      });
+  }, []);
   const scrollTo = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -28,7 +46,7 @@ export default function Home() {
     const name = formData.get('name') as string;
     const phone = formData.get('phone') as string;
     const service = formData.get('service') as string;
-    
+
     const text = `Hello, I would like to request a callback.\nName: ${name}\nPhone: ${phone}\nService of Interest: ${service || 'General Consultation'}`;
     window.open(`https://wa.me/918482954555?text=${encodeURIComponent(text)}`, '_blank');
   };
@@ -278,9 +296,9 @@ export default function Home() {
                 <div className="reveal-item bg-white p-6 rounded-xl border border-outline-variant/40 shadow-card">
                   <h3 className="font-headline-sm text-headline-sm text-primary mb-4">The Expert Team</h3>
                   <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-gutter">
-                    <img 
-                      className="w-20 h-20 rounded-xl object-cover shadow-soft" 
-                      alt="Our dedicated team" 
+                    <img
+                      className="w-20 h-20 rounded-xl object-cover shadow-soft"
+                      alt="Our dedicated team"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuCALXknGLOw1_1ksWYLjECqM48VzS88JusVEhYrsv_CdnTGlzwjONCG_Ae8sg9kjiSoeaaOq8l__6bnRWU98riFSpXYZsh_-phh51ZZoXG2xe9T7H5VRDr6LjpNV8xmViUwWFz5HhgMllgpsMcI4Kbw4vJTMqJoikS6it8o5IKoeky4BlvWiM_bIyhDiKTTQlIIueDQw5fytnoU8rSOwhpt19_LBzJJv8ibaAYhgneghh2EK7LAnDgY"
                     />
                     <div>
@@ -295,9 +313,9 @@ export default function Home() {
               </div>
 
               <div className="relative h-[500px] md:h-[600px] w-full rounded-2xl overflow-hidden group shadow-elevated">
-                <img 
-                  className="parallax-img absolute inset-0 w-full h-[120%] object-cover" 
-                  alt="High-end editorial portrait of a confident man" 
+                <img
+                  className="parallax-img absolute inset-0 w-full h-[120%] object-cover"
+                  alt="High-end editorial portrait of a confident man"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDt0H2A5CfKdO4H8O9SX_KTV-gGrVdM8Aon5MJTQ7-wKzS0E5rOLC5auEHKouNP7_3LSMwvIeK7sIJTdO7b2sMgTjBCl1SnslxXWYQT2CM-xonv21yZOUcfA_Fyzfh2WERuxODeD2ZTsOFro9ADMz3N0_P5Cwiwuj_-cDQfgpIDWkMv-sRzc7M2QXJG9S1rJ4mavBQS2N6t4YFDtZd3dnI0jRlOmqGCIBF24Oj-8mwy33Oe3sLolMvj"
                 />
               </div>
@@ -317,20 +335,16 @@ export default function Home() {
           </div>
 
           <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
-            {[
-              { icon: "content_cut", title: "Hair Patch", desc: "Targeted restoration for localized balding, specifically crown thinning or receding hairlines. Custom-molded to blend seamlessly with your existing density and texture." },
-              { icon: "person", title: "Hair Wig", desc: "Comprehensive coverage for advanced stages of hair loss. Constructed with breathable, micro-mesh bases replicating a natural scalp." },
-              { icon: "spa", title: "Maintenance", desc: "Exclusive clinical maintenance ensuring the longevity and pristine condition of your system. Includes cleansing, adjustments, and styling." },
-            ].map((service) => (
-              <div key={service.title} className="service-card bg-white border border-outline-variant/30 p-8 rounded-xl group hover:shadow-elevated transition-all duration-500 flex flex-col h-full hover-lift">
+            {services.map((service) => (
+              <div key={service._id || service.title} className="service-card bg-white border border-outline-variant/30 p-8 rounded-xl group hover:shadow-elevated transition-all duration-500 flex flex-col h-full hover-lift">
                 <div className="mb-6 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                   <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 0" }}>{service.icon}</span>
                 </div>
                 <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3">{service.title}</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant mb-8 flex-grow">{service.desc}</p>
-                <div className="font-label-lg text-label-lg uppercase text-primary flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer">
+                <p className="font-body-md text-body-md text-on-surface-variant mb-8 flex-grow">{service.description || service.desc}</p>
+                <Link href={`/services#${service.slug}`} className="font-label-lg text-label-lg uppercase text-primary flex items-center gap-2 group-hover:gap-3 transition-all cursor-pointer">
                   Learn More <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </div>
+                </Link>
               </div>
             ))}
           </div>
@@ -423,17 +437,13 @@ export default function Home() {
 
               {/* Location cards */}
               <div className="flex flex-col space-y-4 reveal-section">
-                <div className="reveal-item h-48 lg:h-56 w-full bg-surface-container border border-outline-variant/30 rounded-2xl overflow-hidden relative group cursor-pointer shadow-card">
-                  <div 
-                    className="parallax-img bg-cover bg-center w-full h-[120%] group-hover:scale-105 transition-transform duration-700" 
-                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDnJ5A7WFPexzdUWKdmeL17tlv_wbnDHQqVmmqLRHgvdsDCc_MOcKAR1O24MC9ZgU2nDn_3hpCo2Y_JihgYoC719FRxSSbynSAmPqG58Dn00ZDAJvNujyY778IY2XhfDY0cQgYdU6VgB2iCL8Tg3SLY6DvKDp97LPEhrLUh8SejtaZ6yLAP8ROiGcRiRJ_UwUsF-aVB9fQs1F5sDbC-EVV67AZJWKe07rsyCjWpMlmgZJi2UHRDU0Qj')" }}
+                <div className="reveal-item h-64 lg:h-80 w-full bg-surface-container border border-outline-variant/30 rounded-2xl overflow-hidden relative shadow-card">
+                  <iframe
+                    src="https://maps.google.com/maps?q=Ultimo%20Capelli%20Hair%20Replacement&t=&z=6&ie=UTF8&iwloc=&output=embed"
+                    className="w-full h-full border-none pointer-events-auto"
+                    loading="lazy"
+                    title="Ultimo Capelli Locations"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-white/90 backdrop-blur-sm border border-outline-variant/30 px-5 py-2.5 rounded-full flex items-center shadow-soft">
-                      <span className="material-symbols-outlined text-primary mr-2">location_on</span>
-                      <span className="font-label-md text-label-md uppercase text-on-surface tracking-wider">View Interactive Map</span>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="reveal-item grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -443,7 +453,7 @@ export default function Home() {
                     </div>
                     <h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">Pune</h4>
                     <p className="font-label-md text-label-md text-primary uppercase tracking-widest mb-4">Maharashtra</p>
-                    
+
                     <div className="mb-5 relative z-10">
                       <h5 className="font-label-lg text-label-lg text-on-surface mb-2 border-b border-outline-variant/20 pb-1">Viman Nagar</h5>
                       <div className="space-y-2">
@@ -453,7 +463,7 @@ export default function Home() {
                         </div>
                         <div className="flex items-center">
                           <span className="material-symbols-outlined text-on-surface-variant/60 text-lg mr-2">call</span>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant">+91 74477 14555</p>
+                          <a href="tel:+917447714555" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">+91 74477 14555</a>
                         </div>
                       </div>
                     </div>
@@ -467,7 +477,7 @@ export default function Home() {
                         </div>
                         <div className="flex items-center">
                           <span className="material-symbols-outlined text-on-surface-variant/60 text-lg mr-2">call</span>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant">+91 73919 54555</p>
+                          <a href="tel:+917391954555" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">+91 73919 54555</a>
                         </div>
                       </div>
                     </div>
@@ -479,7 +489,7 @@ export default function Home() {
                     </div>
                     <h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">Bhubaneswar</h4>
                     <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mb-4">Odisha</p>
-                    
+
                     <div className="mb-5 relative z-10">
                       <h5 className="font-label-lg text-label-lg text-on-surface mb-2 border-b border-outline-variant/20 pb-1">Kharvela Nagar</h5>
                       <div className="space-y-2">
@@ -489,7 +499,9 @@ export default function Home() {
                         </div>
                         <div className="flex items-center">
                           <span className="material-symbols-outlined text-on-surface-variant/60 text-lg mr-2">call</span>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant">74477 14555 | 73919 54555</p>
+                          <div className="font-body-sm text-body-sm text-on-surface-variant">
+                            <a href="tel:+917447714555" className="hover:text-primary transition-colors">74477 14555</a> | <a href="tel:+917391954555" className="hover:text-primary transition-colors">73919 54555</a>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -503,7 +515,9 @@ export default function Home() {
                         </div>
                         <div className="flex items-center">
                           <span className="material-symbols-outlined text-on-surface-variant/60 text-lg mr-2">call</span>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant">74477 14555 | 73270 74715</p>
+                          <div className="font-body-sm text-body-sm text-on-surface-variant">
+                            <a href="tel:+917447714555" className="hover:text-primary transition-colors">74477 14555</a> | <a href="tel:+917327074715" className="hover:text-primary transition-colors">73270 74715</a>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -522,7 +536,7 @@ export default function Home() {
                       </div>
                       <div className="flex items-center">
                         <span className="material-symbols-outlined text-on-surface-variant/60 text-lg mr-2">call</span>
-                        <p className="font-body-sm text-body-sm text-on-surface-variant">084829 54555</p>
+                        <a href="tel:+918482954555" className="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors">084829 54555</a>
                       </div>
                     </div>
                   </div>

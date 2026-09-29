@@ -2,39 +2,40 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
-const videos = [
-  {
-    id: "v1",
-    src: "/assets/gallery-videos/video-1.mp4",
-    url: "https://www.instagram.com/reel/Da7NV3Ok_04",
-  },
-  {
-    id: "v2",
-    src: "/assets/gallery-videos/video-2.mp4",
-    url: "https://www.instagram.com/reel/DdYOWVzCQij",
-  },
-  {
-    id: "v3",
-    src: "/assets/gallery-videos/video-3.mp4",
-    url: "https://www.instagram.com/reel/Dac4HbPDjnY",
-  },
-  {
-    id: "v4",
-    src: "/assets/gallery-videos/video-4.mp4",
-    url: "https://www.instagram.com/reel/DapgFbfAorL",
-  },
-  {
-    id: "v5",
-    src: "/assets/gallery-videos/video-5.mp4",
-    url: "https://www.instagram.com/reel/DcN9rAdEjcd",
-  },
-];
+const LOCAL_VIDEO_MAP: Record<string, string> = {
+  "https://www.instagram.com/reel/Da7NV3Ok_04/": "/assets/gallery-videos/video-1.mp4",
+  "https://www.instagram.com/reel/DdYOWVzCQij/": "/assets/gallery-videos/video-2.mp4",
+  "https://www.instagram.com/reel/Dac4HbPDjnY/": "/assets/gallery-videos/video-3.mp4",
+  "https://www.instagram.com/reel/DapgFbfAorL/": "/assets/gallery-videos/video-4.mp4",
+  "https://www.instagram.com/reel/DcN9rAdEjcd/": "/assets/gallery-videos/video-5.mp4",
+};
+
+const getLocalSrc = (url: string) => {
+  if (!url) return undefined;
+  const cleanUrl = url.split('?')[0].replace(/\/$/, '') + '/'; 
+  return LOCAL_VIDEO_MAP[cleanUrl];
+};
 
 export default function VideoGallery() {
+  const [videos, setVideos] = useState<any[]>([]);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [activeMobileId, setActiveMobileId] = useState<string>("v1");
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
   const mobileContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('/api/gallery')
+      .then(r => r.json())
+      .then(data => {
+        const active = data.filter((v: any) => v.isActive).map((v: any, i: number) => ({
+          id: `v${i+1}`,
+          src: getLocalSrc(v.instagramUrl),
+          url: v.instagramUrl,
+          embedUrl: v.instagramUrl ? v.instagramUrl.split('?')[0].replace(/\/$/, '') + '/embed' : ''
+        }));
+        setVideos(active);
+      });
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -205,16 +206,30 @@ export default function VideoGallery() {
                 }}
                 aria-label="Watch full video on Instagram"
               >
-                <div className="aspect-[9/16] w-full bg-surface-container/50">
-                  <video
-                    ref={(el) => { videoRefs.current[`mobile-${video.id}`] = el; }}
-                    src={video.src}
-                    className="w-full h-full object-cover"
-                    muted
-                    playsInline
-                    loop
-                    preload="metadata"
-                  />
+                <div className="aspect-[9/16] w-full bg-surface-container/50 relative">
+                  {video.src ? (
+                    <div className="w-full h-full relative group cursor-pointer">
+                      <video
+                        ref={(el) => { videoRefs.current[`mobile-${video.id}`] = el; }}
+                        src={video.src}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        loop
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <span className="material-symbols-outlined text-white text-5xl">play_circle</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      src={video.embedUrl}
+                      className="w-full h-full border-none pointer-events-none"
+                      scrolling="no"
+                      allowTransparency={true}
+                    />
+                  )}
                 </div>
               </a>
             );
@@ -271,7 +286,7 @@ function DesktopVideoCard({
   onEnter,
   onLeave,
 }: {
-  video: typeof videos[0];
+  video: any;
   videoRefs: React.MutableRefObject<{ [key: string]: HTMLVideoElement | null }>;
   isReducedMotion: boolean;
   onEnter: () => void;
@@ -291,15 +306,29 @@ function DesktopVideoCard({
       }`}
       aria-label="Watch full video on Instagram"
     >
-      <video
-        ref={(el) => { videoRefs.current[`desktop-${video.id}`] = el; }}
-        src={video.src}
-        className="w-full h-full object-cover"
-        muted
-        playsInline
-        loop
-        preload="metadata"
-      />
+      {video.src ? (
+        <div className="w-full h-full relative group cursor-pointer">
+          <video
+            ref={(el) => { videoRefs.current[`desktop-${video.id}`] = el; }}
+            src={video.src}
+            className="w-full h-full object-cover"
+            muted
+            playsInline
+            loop
+            preload="metadata"
+          />
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+            <span className="material-symbols-outlined text-white text-6xl">play_circle</span>
+          </div>
+        </div>
+      ) : (
+        <iframe
+          src={video.embedUrl}
+          className="w-full h-full border-none pointer-events-none bg-white"
+          scrolling="no"
+          allowTransparency={true}
+        />
+      )}
       
       {/* Overlay */}
       <div 

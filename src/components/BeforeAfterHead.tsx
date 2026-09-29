@@ -27,11 +27,11 @@ import after4 from "@/assets/after-4.jpeg";
 
 interface TransformationPair {
   id: string;
-  beforeImg: typeof before1;
-  afterImg: typeof after1;
+  beforeImg: any;
+  afterImg: any;
 }
 
-const transformations: TransformationPair[] = [
+const defaultTransformations: TransformationPair[] = [
   { id: "pair-1", beforeImg: before1, afterImg: after1 },
   { id: "pair-2", beforeImg: before2, afterImg: after2 },
   { id: "pair-3", beforeImg: before3, afterImg: after3 },
@@ -43,10 +43,28 @@ const transformations: TransformationPair[] = [
  * Image-focused before/after showcase. No card chrome — photographs are the hero.
  */
 export default function BeforeAfterHead() {
+  const [transformations, setTransformations] = useState<TransformationPair[]>(defaultTransformations);
   const sectionRef = useRef<HTMLDivElement>(null);
   const pairRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/transformations')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const fetched = data.filter((t: any) => t.isActive).map((t: any) => ({
+            id: t._id,
+            beforeImg: t.beforeImage,
+            afterImg: t.afterImage,
+          }));
+          setTransformations(fetched.length > 0 ? fetched : defaultTransformations);
+          setTimeout(() => ScrollTrigger.refresh(), 100);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -79,7 +97,7 @@ export default function BeforeAfterHead() {
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            setActiveIndex(Math.min(3, Math.floor(self.progress * 4)));
+            setActiveIndex(Math.min(pairs.length - 1, Math.floor(self.progress * pairs.length)));
           },
         },
       });
@@ -95,7 +113,7 @@ export default function BeforeAfterHead() {
       tl.to({}, { duration: 0.7 });
 
       // Transitions
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < pairs.length - 1; i++) {
         tl.to(pairs[i], { y: exitY, scale: 0.96, autoAlpha: 0, duration: 0.8, ease: "power2.inOut" });
         tl.to(pairs[i + 1], { y: 0, scale: 1, autoAlpha: 1, duration: 0.8, ease: "power2.out" }, "<0.15");
         tl.to({}, { duration: 0.7 });
@@ -103,7 +121,7 @@ export default function BeforeAfterHead() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [isReducedMotion]);
+  }, [isReducedMotion, transformations]);
 
   // ── Reduced-motion fallback ──
   if (isReducedMotion) {
@@ -123,13 +141,13 @@ export default function BeforeAfterHead() {
               <div className="text-center">
                 <span className="text-[11px] font-semibold text-on-surface-variant/60 uppercase tracking-[0.15em] mb-2 inline-block">Before</span>
                 <div className="rounded-xl overflow-hidden">
-                  <Image src={pair.beforeImg} alt="Before" className="w-full h-auto" sizes="(max-width: 768px) 45vw, 400px" />
+                  <Image src={pair.beforeImg} alt="Before" width={600} height={800} className="w-full h-auto" sizes="(max-width: 768px) 45vw, 400px" />
                 </div>
               </div>
               <div className="text-center">
                 <span className="text-[11px] font-semibold text-primary/70 uppercase tracking-[0.15em] mb-2 inline-block">After</span>
                 <div className="rounded-xl overflow-hidden">
-                  <Image src={pair.afterImg} alt="After" className="w-full h-auto" sizes="(max-width: 768px) 45vw, 400px" />
+                  <Image src={pair.afterImg} alt="After" width={600} height={800} className="w-full h-auto" sizes="(max-width: 768px) 45vw, 400px" />
                 </div>
               </div>
             </div>
@@ -177,7 +195,7 @@ export default function BeforeAfterHead() {
                   Before
                 </span>
                 <div className="rounded-xl overflow-hidden">
-                  <Image
+                  <Image width={600} height={800}
                     src={pair.beforeImg}
                     alt="Before treatment"
                     className="w-full h-auto"
@@ -194,7 +212,7 @@ export default function BeforeAfterHead() {
                   After
                 </span>
                 <div className="rounded-xl overflow-hidden">
-                  <Image
+                  <Image width={600} height={800}
                     src={pair.afterImg}
                     alt="After restoration"
                     className="w-full h-auto"
@@ -214,7 +232,7 @@ export default function BeforeAfterHead() {
                   Before
                 </span>
                 <div className="rounded-xl overflow-hidden max-w-[320px] sm:max-w-[360px]">
-                  <Image
+                  <Image width={600} height={800}
                     src={pair.beforeImg}
                     alt="Before treatment"
                     className="w-full h-auto"
@@ -236,7 +254,7 @@ export default function BeforeAfterHead() {
                   After
                 </span>
                 <div className="rounded-xl overflow-hidden max-w-[320px] sm:max-w-[360px]">
-                  <Image
+                  <Image width={600} height={800}
                     src={pair.afterImg}
                     alt="After restoration"
                     className="w-full h-auto"
