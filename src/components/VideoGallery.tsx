@@ -25,7 +25,7 @@ export default function VideoGallery() {
 
   useEffect(() => {
     fetch('/api/gallery')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : [])
       .then(data => {
         const active = data.filter((v: any) => v.isActive).map((v: any, i: number) => ({
           id: `v${i+1}`,

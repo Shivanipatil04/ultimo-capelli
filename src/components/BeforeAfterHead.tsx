@@ -51,7 +51,7 @@ export default function BeforeAfterHead() {
 
   useEffect(() => {
     fetch('/api/transformations')
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : [])
       .then(data => {
         if (data && data.length > 0) {
           const fetched = data.filter((t: any) => t.isActive).map((t: any) => ({

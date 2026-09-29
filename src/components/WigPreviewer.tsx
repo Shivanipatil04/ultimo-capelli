@@ -5,6 +5,16 @@ import { OrbitControls } from "@react-three/drei";
 import { useRef, useState, useMemo, useEffect } from "react";
 import * as THREE from "three";
 import ErrorBoundary from "./ErrorBoundary";
+import dynamic from "next/dynamic";
+
+const Wig360Viewer = dynamic(() => import("./Wig360Viewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-full w-full">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  ),
+});
 
 interface WigStyle {
   name: string;
@@ -12,6 +22,11 @@ interface WigStyle {
   description: string;
   color: string;
   coverage: "full" | "patch" | "frontal";
+  viewerConfig?: {
+    id: string;
+    basePath: string;
+    frameCount: number;
+  };
 }
 
 const wigStyles: WigStyle[] = [
@@ -21,6 +36,11 @@ const wigStyles: WigStyle[] = [
     description: "Complete coverage with natural-looking density. Breathable micro-mesh base for all-day comfort.",
     color: "#1a1008",
     coverage: "full",
+    viewerConfig: {
+      id: "wig-1",
+      basePath: "/wigs/wig-1/",
+      frameCount: 36,
+    }
   },
   {
     name: "Crown Patch System",
@@ -134,80 +154,29 @@ function MannequinHead({ wigColor, coverage }: { wigColor: string; coverage: str
 
 export default function WigPreviewer() {
   const [activeWig, setActiveWig] = useState(0);
-  const [interacting, setInteracting] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true); // default true for SSR, corrected in useEffect
   const current = wigStyles[activeWig];
-
-  useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1024px)");
-    setIsDesktop(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center">
-      {/* 3D Canvas */}
+      {/* Viewer Box */}
       <div
         className="h-[450px] md:h-[550px] w-full rounded-lg overflow-hidden border border-outline-variant/30 bg-surface-container-lowest relative shadow-xl"
-        {...(interacting && !isDesktop ? { "data-lenis-prevent": "true" } : {})}
       >
         <ErrorBoundary>
-          <Canvas
-            camera={{ position: [0, 0, 5.5], fov: 40 }}
-            gl={{ antialias: false, alpha: true, powerPreference: "low-power" }}
-            dpr={[1, 1.5]}
-            style={{
-              background: "linear-gradient(180deg, #F3EEFB 0%, #EDE5F7 100%)",
-              touchAction: interacting || isDesktop ? "none" : "pan-y",
-            }}
-          >
-            <ambientLight intensity={0.8} color="#F3EEFB" />
-            <directionalLight position={[3, 4, 5]} intensity={1.2} color="#FFFFFF" />
-            <pointLight position={[-3, 2, 3]} intensity={0.4} color="#A78BFA" distance={15} />
-            <MannequinHead wigColor={current.color} coverage={current.coverage} />
-            <OrbitControls
-              enableZoom={isDesktop || interacting}
-              enableRotate={isDesktop || interacting}
-              enablePan={false}
-              minDistance={3.5}
-              maxDistance={8}
-              minPolarAngle={Math.PI * 0.2}
-              maxPolarAngle={Math.PI * 0.7}
-              autoRotate={false}
+          {current.viewerConfig ? (
+            <Wig360Viewer
+              key={current.viewerConfig.id} // Re-mount when wig changes
+              basePath={current.viewerConfig.basePath}
+              frameCount={current.viewerConfig.frameCount}
+              autoRotate={true}
             />
-          </Canvas>
-        </ErrorBoundary>
-
-        {/* Mobile: Tap to Interact overlay (hidden on hover-capable devices) */}
-        {!interacting && (
-          <div
-            className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer lg:hidden"
-            onClick={() => setInteracting(true)}
-          >
-            <div className="bg-white/90 backdrop-blur-sm border border-primary/20 px-6 py-3 rounded-full shadow-card flex items-center gap-2 transition-transform hover:scale-105 active:scale-95">
-              <span className="material-symbols-outlined text-primary text-xl">3d_rotation</span>
-              <span className="font-label-lg text-label-lg text-primary uppercase tracking-widest">Tap to Interact</span>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full w-full bg-[#F3EEFB] text-primary">
+              <span className="material-symbols-outlined text-5xl mb-4 opacity-50">3d_rotation</span>
+              <p className="font-label-lg text-label-lg uppercase tracking-widest opacity-70">Preview coming soon</p>
             </div>
-          </div>
-        )}
-
-        {/* Mobile: Done button when interacting */}
-        {interacting && (
-          <button
-            className="absolute top-3 right-3 z-20 bg-primary text-on-primary px-4 py-2 rounded-full font-label-md text-label-md uppercase tracking-widest shadow-card transition-all hover:bg-primary/90 active:scale-95 lg:hidden"
-            onClick={() => setInteracting(false)}
-          >
-            Done
-          </button>
-        )}
-
-        <div className="absolute bottom-4 left-4 bg-surface/80 backdrop-blur-sm px-3 py-1 rounded-full border border-outline-variant/30 pointer-events-none z-10">
-          <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">
-            Drag to rotate · Scroll to zoom
-          </span>
-        </div>
+          )}
+        </ErrorBoundary>
       </div>
 
       {/* Info Panel */}

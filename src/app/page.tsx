@@ -14,6 +14,7 @@ import Link from "next/link";
 
 // Dynamic imports for R3F components (SSR disabled)
 const HeroHead = dynamic(() => import("@/components/HeroHead"), { ssr: false });
+const Wig360Viewer = dynamic(() => import("@/components/Wig360Viewer"), { ssr: false });
 const WigPreviewer = dynamic(() => import("@/components/WigPreviewer"), { ssr: false });
 
 export default function Home() {
@@ -25,7 +26,7 @@ export default function Home() {
 
   useEffect(() => {
     fetch('/api/services')
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : [])
       .then(data => {
         if (data && data.length > 0) {
           const active = data.filter((s: any) => s.isActive);
@@ -252,8 +253,8 @@ export default function Home() {
               </div>
 
               {/* Right — 3D Head (contained block on mobile, side-by-side on desktop) */}
-              <div className="hero-layer-subject relative w-full h-[350px] lg:h-[650px] z-10">
-                <HeroHead />
+              <div className="hero-layer-subject relative w-full h-[400px] lg:h-[720px] z-10 scale-105 lg:scale-110 translate-y-4">
+                <Wig360Viewer basePath="/wigs/wig-1/hero/" frameCount={36} interactive={false} rotationSeconds={10} transparent={true} />
                 {/* Soft glow behind the head */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-primary/20 blur-3xl pointer-events-none -z-10" />
               </div>

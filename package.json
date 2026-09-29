@@ -7,9 +7,12 @@
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prepare:frames": "node scripts/prepare-frames.mjs",
+    "prepare:hero-frames": "node scripts/prepare-hero-frames.mjs"
   },
   "dependencies": {
+    "@imgly/background-removal": "^1.7.0",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@splinetool/loader": "^1.12.98",
@@ -24,6 +27,7 @@
     "next": "16.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "sharp": "^0.35.5",
     "three": "^0.185.1",
     "uuid": "^14.0.2"
   },
