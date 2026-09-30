@@ -178,7 +178,8 @@ export default function Wig360Viewer({
       try {
         const response = await fetch(url);
         const blob = await response.blob();
-        let img;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let img: any;
         if (typeof createImageBitmap !== 'undefined') {
           img = await createImageBitmap(blob);
         } else {
