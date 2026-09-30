@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.1.13'],
   devIndicators: {
     position: 'bottom-right',
+  },
+  experimental: {
+    optimizePackageImports: ["@react-three/drei", "@react-three/fiber"],
   }
 };
 
