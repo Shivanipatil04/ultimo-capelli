@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     position: 'bottom-right',
   },
   experimental: {
+    turbopack: false,
     optimizePackageImports: ["@react-three/drei", "@react-three/fiber"],
   }
 };
