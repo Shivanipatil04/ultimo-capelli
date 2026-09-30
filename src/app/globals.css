@@ -1,9 +1,6 @@
-@import "tailwindcss";
-@config "../../tailwind.config.ts";
-
-@theme inline {
-  /* Let config override */
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   body {
