@@ -194,22 +194,6 @@ export default function Home() {
       }
     );
 
-    // Transformation: background glow drifts behind the pinned card
-    gsap.fromTo(".transform-layer-bg",
-      { y: 0, scale: 1 },
-      {
-        y: 50 * scale,
-        scale: 1.1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: "#transformation",
-          start: "top bottom",
-          end: "bottom top",
-          scrub: true,
-        },
-      }
-    );
-
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
@@ -335,7 +319,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-3 gap-gutter mb-stack-lg">
+          <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter mb-stack-lg">
             {services.map((service) => (
               <div key={service._id || service.title} className="service-card bg-white border border-outline-variant/30 p-8 rounded-xl group hover:shadow-elevated transition-all duration-500 flex flex-col h-full hover-lift">
                 <div className="mb-6 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">

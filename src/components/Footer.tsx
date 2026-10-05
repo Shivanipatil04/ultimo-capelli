@@ -13,7 +13,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-surface-container w-full py-16 md:py-stack-lg border-t border-outline-variant/40 mt-auto z-40 relative">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
         <div className="col-span-1 md:col-span-1">
           <div className="mb-6">
             <Image src={logo} alt="Ultimo Capelli Logo" width={180} height={56} className="object-contain hover:scale-105 transition-transform duration-300 cursor-pointer brightness-0 opacity-90" onClick={() => scrollTo("home")} />

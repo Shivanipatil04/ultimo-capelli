@@ -57,7 +57,7 @@ export default function Navbar() {
     }`}>
       <div className="flex justify-between items-center h-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
         <button onClick={() => scrollTo("home")} className="cursor-pointer border-none bg-transparent p-0 flex items-center justify-center">
-          <Image src={logo} alt="Ultimo Capelli Logo" width={220} height={70} className={`object-contain hover:scale-105 transition-transform duration-300 ${!scrolled ? 'brightness-0 lg:brightness-100' : 'brightness-0'} opacity-90`} priority />
+          <Image src={logo} alt="Ultimo Capelli Logo" width={220} height={70} className={`object-contain hover:scale-105 transition-transform duration-300 w-[160px] md:w-[180px] lg:w-[220px] ${!scrolled ? 'brightness-0 lg:brightness-100' : 'brightness-0'} opacity-90`} priority />
         </button>
         <div className="hidden lg:flex gap-8 items-center">
           <button onClick={() => scrollTo("home")} className={getLinkClasses('home')}><span className={!scrolled ? "lg:text-on-dark/80 lg:hover:text-white" : ""}>Home</span></button>
