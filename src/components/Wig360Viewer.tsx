@@ -151,9 +151,17 @@ export default function Wig360Viewer({
     const state = stateRef.current;
     
     // Check cache
-    if (globalImageCache.has(basePath)) {
-      state.images = globalImageCache.get(basePath) || [];
-      state.posterImage = globalPosterCache.get(basePath) || null;
+    const cachedImages = globalImageCache.get(basePath);
+    const cachedPoster = globalPosterCache.get(basePath);
+    if (cachedImages && cachedImages.length === frameCount && cachedImages.every(Boolean)) {
+      state.images = [...cachedImages];
+      state.posterImage = cachedPoster || cachedImages[0] || null;
+      state.currentFrameIndex = 0;
+      state.exactFrameIndex = 0;
+      state.zoom = 1;
+      state.panX = 0;
+      state.panY = 0;
+      setZoomLevel(1);
       setLoadedCount(frameCount);
       setIsFullyLoaded(true);
       drawFrame();
@@ -170,6 +178,8 @@ export default function Wig360Viewer({
     setZoomLevel(1);
     setLoadedCount(0);
     setIsFullyLoaded(false);
+
+    let loadedInThisSession = 0;
 
     const loadImage = async (index: number) => {
       const frameNum = actualFrameOrder[index];
@@ -196,7 +206,16 @@ export default function Wig360Viewer({
             state.posterImage = img;
             drawFrame();
           }
-          setLoadedCount(prev => prev + 1);
+          loadedInThisSession++;
+          setLoadedCount(loadedInThisSession);
+
+          if (loadedInThisSession === frameCount) {
+            globalImageCache.set(basePath, [...state.images]);
+            if (state.posterImage) {
+              globalPosterCache.set(basePath, state.posterImage);
+            }
+            setIsFullyLoaded(true);
+          }
         }
       } catch (err) {
         console.error("Failed to load image", url, err);
@@ -211,18 +230,6 @@ export default function Wig360Viewer({
 
     return () => { active = false; };
   }, [basePath, frameCount, actualFrameOrder, drawFrame]);
-
-  useEffect(() => {
-    if (loadedCount === frameCount && loadedCount > 0 && !globalImageCache.has(basePath)) {
-      globalImageCache.set(basePath, [...stateRef.current.images]);
-      if (stateRef.current.posterImage) {
-        globalPosterCache.set(basePath, stateRef.current.posterImage);
-      }
-      setIsFullyLoaded(true);
-    } else if (loadedCount === frameCount) {
-      setIsFullyLoaded(true);
-    }
-  }, [loadedCount, frameCount, basePath]);
 
   // Update internal isPlaying ref when state changes
   useEffect(() => {

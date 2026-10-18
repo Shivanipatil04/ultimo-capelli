@@ -48,6 +48,11 @@ const wigStyles: WigStyle[] = [
     description: "Targeted restoration for crown thinning. Custom-molded to blend seamlessly with existing hair.",
     color: "#2c1a0e",
     coverage: "patch",
+    viewerConfig: {
+      id: "wig-2",
+      basePath: "/wigs/wig-2/",
+      frameCount: 36,
+    }
   },
   {
     name: "Frontal Hairline",
@@ -55,13 +60,11 @@ const wigStyles: WigStyle[] = [
     description: "Natural hairline recreation. Ultra-thin lace front for an undetectable finish.",
     color: "#1f1510",
     coverage: "frontal",
-  },
-  {
-    name: "Premium Wave",
-    type: "Hair Wig",
-    description: "Wavy texture full wig with premium European hair. Styled for a sophisticated look.",
-    color: "#15100a",
-    coverage: "full",
+    viewerConfig: {
+      id: "wig-3",
+      basePath: "/wigs/wig-3/",
+      frameCount: 36,
+    }
   },
 ];
 
@@ -168,7 +171,7 @@ export default function WigPreviewer() {
               key={current.viewerConfig.id} // Re-mount when wig changes
               basePath={current.viewerConfig.basePath}
               frameCount={current.viewerConfig.frameCount}
-              autoRotate={true}
+              autoRotate={false}
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full w-full bg-[#F3EEFB] text-primary">
