@@ -258,6 +258,7 @@ export default function Home() {
                   fill
                   priority
                   fetchPriority="high"
+                  unoptimized
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-contain pointer-events-none select-none z-0"
                 />

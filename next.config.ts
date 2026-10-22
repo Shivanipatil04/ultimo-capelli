@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["gsap", "lenis"],
   },
   images: {
+    contentDispositionType: 'inline',
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000,
     remotePatterns: [

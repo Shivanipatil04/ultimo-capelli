@@ -126,6 +126,7 @@ export default function BeforeAfterHead() {
                     className="object-cover"
                     sizes="(max-width: 768px) 42vw, 25vw"
                     loading="lazy"
+                    unoptimized={typeof pair.beforeImg === 'string'}
                   />
                 </div>
               </div>
@@ -143,6 +144,7 @@ export default function BeforeAfterHead() {
                     className="object-cover"
                     sizes="(max-width: 768px) 42vw, 25vw"
                     loading="lazy"
+                    unoptimized={typeof pair.afterImg === 'string'}
                   />
                 </div>
               </div>
