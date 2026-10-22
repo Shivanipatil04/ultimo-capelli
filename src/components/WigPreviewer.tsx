@@ -1,9 +1,6 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { useRef, useState, useMemo, useEffect } from "react";
-import * as THREE from "three";
+import { useState } from "react";
 import ErrorBoundary from "./ErrorBoundary";
 import dynamic from "next/dynamic";
 
@@ -67,93 +64,6 @@ const wigStyles: WigStyle[] = [
     }
   },
 ];
-
-function MannequinHead({ wigColor, coverage }: { wigColor: string; coverage: string }) {
-  const headRef = useRef<THREE.Group>(null);
-
-  useFrame(() => {
-    if (headRef.current) {
-      headRef.current.rotation.y += 0.002;
-    }
-  });
-
-  // Head geometry - an elongated sphere
-  const headGeometry = useMemo(() => new THREE.SphereGeometry(1.4, 64, 64), []);
-
-  // Wig geometry based on coverage
-  const wigGeometry = useMemo(() => {
-    if (coverage === "full") {
-      // Full cap - top half of a slightly larger sphere
-      const geo = new THREE.SphereGeometry(1.48, 64, 64, 0, Math.PI * 2, 0, Math.PI * 0.6);
-      return geo;
-    } else if (coverage === "patch") {
-      // Crown patch - small cap on top
-      const geo = new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.35);
-      return geo;
-    } else {
-      // Frontal - front arc
-      const geo = new THREE.SphereGeometry(1.48, 48, 48, -Math.PI * 0.4, Math.PI * 0.8, 0, Math.PI * 0.45);
-      return geo;
-    }
-  }, [coverage]);
-
-  return (
-    <group ref={headRef}>
-      {/* Head base */}
-      <mesh geometry={headGeometry} scale={[1, 1.15, 1]}>
-        <meshStandardMaterial color="#e8d5c4" roughness={0.7} metalness={0} />
-      </mesh>
-
-      {/* Ears */}
-      <mesh position={[-1.35, -0.1, 0]} rotation={[0, 0, Math.PI * 0.1]}>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshStandardMaterial color="#e0c8b5" roughness={0.7} />
-      </mesh>
-      <mesh position={[1.35, -0.1, 0]} rotation={[0, 0, -Math.PI * 0.1]}>
-        <sphereGeometry args={[0.2, 16, 16]} />
-        <meshStandardMaterial color="#e0c8b5" roughness={0.7} />
-      </mesh>
-
-      {/* Nose hint */}
-      <mesh position={[0, -0.1, 1.35]}>
-        <sphereGeometry args={[0.15, 16, 16]} />
-        <meshStandardMaterial color="#dcc0ac" roughness={0.6} />
-      </mesh>
-
-      {/* Wig */}
-      <mesh geometry={wigGeometry} position={[0, 0.08, 0]} scale={[1, 1.15, 1]}>
-        <meshStandardMaterial
-          color={wigColor}
-          roughness={0.9}
-          metalness={0.05}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* Wig edge glow */}
-      <mesh geometry={wigGeometry} position={[0, 0.08, 0]} scale={[1.01, 1.16, 1.01]}>
-        <meshStandardMaterial
-          color="#7C3AED"
-          emissive="#7C3AED"
-          emissiveIntensity={0.2}
-          transparent
-          opacity={0.1}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* Pedestal */}
-      <mesh position={[0, -2.2, 0]}>
-        <cylinderGeometry args={[0.8, 1, 0.3, 32]} />
-        <meshStandardMaterial color="#E2D8F0" roughness={0.5} metalness={0.1} />
-      </mesh>
-      <mesh position={[0, -1.4, 0]}>
-        <cylinderGeometry args={[0.3, 0.3, 1.4, 16]} />
-        <meshStandardMaterial color="#D4CCE3" roughness={0.5} metalness={0.1} />
-      </mesh>
-    </group>
-  );
-}
 
 export default function WigPreviewer() {
   const [activeWig, setActiveWig] = useState(0);

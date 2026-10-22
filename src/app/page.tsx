@@ -1,19 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MagneticButton from "@/components/MagneticButton";
 import BeforeAfterHead from "@/components/BeforeAfterHead";
 import VideoGallery from "@/components/VideoGallery";
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
-
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-// Dynamic imports for R3F components (SSR disabled)
-const HeroHead = dynamic(() => import("@/components/HeroHead"), { ssr: false });
+// Dynamic imports for 360 viewers
 const Wig360Viewer = dynamic(() => import("@/components/Wig360Viewer"), { ssr: false });
 const WigPreviewer = dynamic(() => import("@/components/WigPreviewer"), { ssr: false });
 
@@ -53,149 +50,166 @@ export default function Home() {
   };
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
     if (prefersReducedMotion) return;
 
-    // Progressive reveal animations — staggered, with breathing expo.out easing
-    gsap.utils.toArray(".reveal-section").forEach((el: any) => {
-      const children = el.querySelectorAll(".reveal-item");
+    let killed = false;
+
+    const initGSAP = async () => {
+      if (killed) return;
+      const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      if (killed) return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Progressive reveal animations for below-the-fold sections (preserve hero text visibility)
+      gsap.utils.toArray(".reveal-section:not(.hero-layer-text)").forEach((el: any) => {
+        const children = el.querySelectorAll(".reveal-item");
+        gsap.fromTo(
+          children,
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1.0,
+            stagger: 0.1,
+            ease: "expo.out",
+            scrollTrigger: {
+              trigger: el,
+              start: "top 85%",
+            },
+          }
+        );
+      });
+
+      // Service cards — gentle lift-in with stagger
       gsap.fromTo(
-        children,
-        { y: 40, opacity: 0 },
+        ".service-card",
+        { opacity: 0, y: 30 },
         {
-          y: 0,
           opacity: 1,
-          duration: 1.2,
-          stagger: 0.1,
+          y: 0,
+          duration: 0.9,
+          stagger: 0.12,
           ease: "expo.out",
           scrollTrigger: {
-            trigger: el,
+            trigger: "#services",
+            start: "top 80%",
+          },
+        }
+      );
+
+      // Stats — fade up with spring
+      gsap.fromTo(
+        ".stat-item",
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: "back.out(1.2)",
+          scrollTrigger: {
+            trigger: ".stats-bar",
             start: "top 85%",
           },
         }
       );
-    });
 
-    // Service cards — gentle lift-in with stagger
-    gsap.fromTo(
-      ".service-card",
-      { opacity: 0, y: 40 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 1,
-        stagger: 0.15,
-        ease: "expo.out",
-        scrollTrigger: {
-          trigger: "#services",
-          start: "top 80%",
-        },
-      }
-    );
+      // Image parallax — subtle 0.5x speed
+      gsap.utils.toArray(".parallax-img").forEach((el: any) => {
+        gsap.fromTo(
+          el,
+          { yPercent: -10 },
+          {
+            yPercent: 10,
+            ease: "none",
+            scrollTrigger: {
+              trigger: el.parentElement,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true,
+            },
+          }
+        );
+      });
 
-    // Stats — fade up with spring
-    gsap.fromTo(
-      ".stat-item",
-      { opacity: 0, y: 20 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: "back.out(1.2)",
-        scrollTrigger: {
-          trigger: ".stats-bar",
-          start: "top 85%",
-        },
-      }
-    );
+      // ── Scroll-Depth Parallax Layers ──
+      const isMobile = window.innerWidth < 768;
+      const scale = isMobile ? 0.5 : 1; // halve travel on mobile
 
-    // Image parallax — subtle 0.5x speed
-    gsap.utils.toArray(".parallax-img").forEach((el: any) => {
-      gsap.fromTo(
-        el,
-        { yPercent: -10 },
+      // Hero: background glow drifts slowest
+      gsap.fromTo(".hero-layer-bg",
+        { y: 0 },
         {
-          yPercent: 10,
+          y: 30 * scale,
           ease: "none",
           scrollTrigger: {
-            trigger: el.parentElement,
+            trigger: "#home",
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        }
+      );
+
+      // Hero: text moves at medium speed
+      gsap.fromTo(".hero-layer-text",
+        { y: 0 },
+        {
+          y: 60 * scale,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#home",
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        }
+      );
+
+      // Hero: 3D subject moves fastest (comes toward viewer)
+      gsap.fromTo(".hero-layer-subject",
+        { y: 0 },
+        {
+          y: 100 * scale,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#home",
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        }
+      );
+
+      // About: text column drifts at a different rate than the image
+      gsap.fromTo(".about-layer-text",
+        { y: 0 },
+        {
+          y: -40 * scale,
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#about",
             start: "top bottom",
             end: "bottom top",
             scrub: true,
           },
         }
       );
-    });
+    };
 
-    // ── Scroll-Depth Parallax Layers ──
-    const isMobile = window.innerWidth < 768;
-    const scale = isMobile ? 0.5 : 1; // halve travel on mobile
-
-    // Hero: background glow drifts slowest
-    gsap.fromTo(".hero-layer-bg",
-      { y: 0 },
-      {
-        y: 30 * scale,
-        ease: "none",
-        scrollTrigger: {
-          trigger: "#home",
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      }
-    );
-
-    // Hero: text moves at medium speed
-    gsap.fromTo(".hero-layer-text",
-      { y: 0 },
-      {
-        y: 60 * scale,
-        ease: "none",
-        scrollTrigger: {
-          trigger: "#home",
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      }
-    );
-
-    // Hero: 3D subject moves fastest (comes toward viewer)
-    gsap.fromTo(".hero-layer-subject",
-      { y: 0 },
-      {
-        y: 100 * scale,
-        ease: "none",
-        scrollTrigger: {
-          trigger: "#home",
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      }
-    );
-
-    // About: text column drifts at a different rate than the image
-    gsap.fromTo(".about-layer-text",
-      { y: 0 },
-      {
-        y: -40 * scale,
-        ease: "none",
-        scrollTrigger: {
-          trigger: "#about",
-          start: "top bottom",
-          end: "bottom top",
-          scrub: true,
-        },
-      }
-    );
+    const timer = setTimeout(initGSAP, 60);
 
     return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      killed = true;
+      clearTimeout(timer);
+      import("gsap/ScrollTrigger").then(({ ScrollTrigger }) => {
+        ScrollTrigger.getAll().forEach((t) => t.kill());
+      }).catch(() => {});
     };
   }, []);
 
@@ -238,7 +252,18 @@ export default function Home() {
 
               {/* Right — 3D Head (contained block on mobile, side-by-side on desktop) */}
               <div className="hero-layer-subject relative w-full h-[400px] lg:h-[720px] z-10 scale-105 lg:scale-110 translate-y-4">
-                <Wig360Viewer basePath="/wigs/wig-1/hero/" frameCount={36} interactive={false} rotationSeconds={10} transparent={true} />
+                <Image
+                  src="/wigs/wig-1/hero/001.webp"
+                  alt="Ultimo Capelli Bespoke Hair System"
+                  fill
+                  priority
+                  fetchPriority="high"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-contain pointer-events-none select-none z-0"
+                />
+                <div className="absolute inset-0 z-10">
+                  <Wig360Viewer basePath="/wigs/wig-1/hero/" frameCount={36} interactive={false} rotationSeconds={10} transparent={true} />
+                </div>
                 {/* Soft glow behind the head */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-primary/20 blur-3xl pointer-events-none -z-10" />
               </div>
@@ -281,10 +306,13 @@ export default function Home() {
                 <div className="reveal-item bg-white p-6 rounded-xl border border-outline-variant/40 shadow-card">
                   <h3 className="font-headline-sm text-headline-sm text-primary mb-4">The Expert Team</h3>
                   <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-gutter">
-                    <img
+                    <Image
                       className="w-20 h-20 rounded-xl object-cover shadow-soft"
                       alt="Our dedicated team"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuCALXknGLOw1_1ksWYLjECqM48VzS88JusVEhYrsv_CdnTGlzwjONCG_Ae8sg9kjiSoeaaOq8l__6bnRWU98riFSpXYZsh_-phh51ZZoXG2xe9T7H5VRDr6LjpNV8xmViUwWFz5HhgMllgpsMcI4Kbw4vJTMqJoikS6it8o5IKoeky4BlvWiM_bIyhDiKTTQlIIueDQw5fytnoU8rSOwhpt19_LBzJJv8ibaAYhgneghh2EK7LAnDgY"
+                      width={80}
+                      height={80}
+                      loading="lazy"
                     />
                     <div>
                       <h4 className="font-label-lg text-label-lg uppercase tracking-widest text-on-surface">Our Experienced Team</h4>
@@ -298,10 +326,13 @@ export default function Home() {
               </div>
 
               <div className="relative h-[500px] md:h-[600px] w-full rounded-2xl overflow-hidden group shadow-elevated">
-                <img
-                  className="parallax-img absolute inset-0 w-full h-[120%] object-cover"
+                <Image
+                  className="parallax-img absolute inset-0 w-full !h-[120%] object-cover"
                   alt="High-end editorial portrait of a confident man"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDt0H2A5CfKdO4H8O9SX_KTV-gGrVdM8Aon5MJTQ7-wKzS0E5rOLC5auEHKouNP7_3LSMwvIeK7sIJTdO7b2sMgTjBCl1SnslxXWYQT2CM-xonv21yZOUcfA_Fyzfh2WERuxODeD2ZTsOFro9ADMz3N0_P5Cwiwuj_-cDQfgpIDWkMv-sRzc7M2QXJG9S1rJ4mavBQS2N6t4YFDtZd3dnI0jRlOmqGCIBF24Oj-8mwy33Oe3sLolMvj"
+                  fill
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
             </div>

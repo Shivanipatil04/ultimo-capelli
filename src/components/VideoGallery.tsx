@@ -20,12 +20,31 @@ export default function VideoGallery() {
   const [videos, setVideos] = useState<any[]>([]);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [activeId, setActiveId] = useState<string>("v1");
+  const [isGalleryInView, setIsGalleryInView] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
   const cardRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Use a ref for active ID inside the observer to avoid dependency issues
   const activeIdRef = useRef("v1");
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsGalleryInView(true);
+        }
+      },
+      { rootMargin: "350px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     fetch('/api/gallery')
@@ -59,8 +78,10 @@ export default function VideoGallery() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  // Force first frame render for thumbnails
+  // Force first frame render for thumbnails only when gallery is in view
   useEffect(() => {
+    if (!isGalleryInView) return;
+
     videos.forEach((v) => {
       const vid = videoRefs.current[v.id];
       if (vid) {
@@ -76,7 +97,7 @@ export default function VideoGallery() {
         }, 50);
       }
     });
-  }, [videos]);
+  }, [videos, isGalleryInView]);
 
   // Hover interactions for mouse devices
   const handleMouseEnter = useCallback((id: string) => {
@@ -126,9 +147,9 @@ export default function VideoGallery() {
     return () => observer.disconnect();
   }, [videos, isReducedMotion]);
 
-  // Play active video on mobile/touch, pause others
+  // Play active video on mobile/touch, pause others only when gallery is in view
   useEffect(() => {
-    if (isReducedMotion) return;
+    if (isReducedMotion || !isGalleryInView) return;
 
     // Only auto-play based on intersection if we are on a smaller screen or touch device
     // On desktop, hover handles playback, so we don't force auto-play based on scroll position
@@ -146,7 +167,7 @@ export default function VideoGallery() {
         }
       });
     }
-  }, [activeId, isReducedMotion, videos]);
+  }, [activeId, isReducedMotion, videos, isGalleryInView]);
 
   const scrollToCard = useCallback((id: string) => {
     const card = cardRefs.current[id];
@@ -156,7 +177,7 @@ export default function VideoGallery() {
   }, []);
 
   return (
-    <div className="w-full">
+    <div ref={containerRef} className="w-full">
       <div className="w-full relative">
         <div
           ref={scrollRef}
@@ -194,12 +215,12 @@ export default function VideoGallery() {
                     <div className="w-full h-full relative cursor-pointer">
                       <video
                         ref={(el) => { videoRefs.current[video.id] = el; }}
-                        src={video.src}
+                        src={isGalleryInView ? video.src : undefined}
                         className="w-full h-full object-cover"
                         muted
                         playsInline
                         loop
-                        preload="metadata"
+                        preload={isGalleryInView ? "metadata" : "none"}
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                         <span className="material-symbols-outlined text-white text-5xl md:text-6xl">play_circle</span>

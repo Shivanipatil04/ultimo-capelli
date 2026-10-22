@@ -43,7 +43,7 @@ export default async function ServicesPage() {
               >
                 <div className={`flex justify-center ${index % 2 !== 0 ? 'lg:order-2' : ''}`}>
                   {service.image ? (
-                    <img src={service.image} alt={service.title} className="w-full max-w-md aspect-square object-cover rounded-2xl shadow-soft" />
+                    <img src={service.image} alt={service.title} loading="lazy" decoding="async" className="w-full max-w-md aspect-square object-cover rounded-2xl shadow-soft" />
                   ) : (
                     <div className="w-full max-w-md aspect-square bg-surface-container rounded-2xl flex items-center justify-center border border-outline-variant/30 shadow-soft">
                       <span className="material-symbols-outlined text-[120px] text-primary/20">

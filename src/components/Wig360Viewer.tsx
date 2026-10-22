@@ -145,8 +145,26 @@ export default function Wig360Viewer({
     drawFrame();
   }, [frameCount, drawFrame]);
 
+  const [shouldLoad, setShouldLoad] = useState(!interactive);
+
+  useEffect(() => {
+    if (shouldLoad) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setShouldLoad(true);
+      }
+    }, { rootMargin: '350px 0px' });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [shouldLoad]);
+
   // Handle basePath change (reset view and load images)
   useEffect(() => {
+    if (!shouldLoad) return;
     let active = true;
     const state = stateRef.current;
     
@@ -223,13 +241,47 @@ export default function Wig360Viewer({
     };
 
     loadImage(0).then(() => {
-      for (let i = 1; i < frameCount; i++) {
-         if (active) loadImage(i);
+      if (!active) return;
+      if (!interactive) {
+        // Hero: load frame 0 immediately, defer frames 1..35 to idle time in small batches
+        const loadRemainingFrames = async () => {
+          const BATCH = 3;
+          for (let i = 1; i < frameCount; i += BATCH) {
+            if (!active) break;
+            const batch = [];
+            for (let j = i; j < Math.min(i + BATCH, frameCount); j++) {
+              batch.push(loadImage(j));
+            }
+            await Promise.all(batch);
+            await new Promise((r) => setTimeout(r, 60));
+          }
+        };
+
+        const idle = (window as any).requestIdleCallback;
+        if (typeof idle === "function") {
+          idle(() => { if (active) loadRemainingFrames(); }, { timeout: 2000 });
+        } else {
+          setTimeout(() => { if (active) loadRemainingFrames(); }, 800);
+        }
+      } else {
+        // Interactive viewer: load remaining in batches
+        const loadInteractiveFrames = async () => {
+          const BATCH = 4;
+          for (let i = 1; i < frameCount; i += BATCH) {
+            if (!active) break;
+            const batch = [];
+            for (let j = i; j < Math.min(i + BATCH, frameCount); j++) {
+              batch.push(loadImage(j));
+            }
+            await Promise.all(batch);
+          }
+        };
+        loadInteractiveFrames();
       }
     });
 
     return () => { active = false; };
-  }, [basePath, frameCount, actualFrameOrder, drawFrame]);
+  }, [basePath, frameCount, actualFrameOrder, drawFrame, shouldLoad, interactive]);
 
   // Update internal isPlaying ref when state changes
   useEffect(() => {
@@ -456,7 +508,7 @@ export default function Wig360Viewer({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full h-full ${interactive ? 'rounded-lg overflow-hidden border border-outline-variant/30 shadow-xl' : ''} transition-opacity duration-700 ${!interactive && !isFullyLoaded ? 'opacity-0' : 'opacity-100'}`}
+      className={`relative w-full h-full ${interactive ? 'rounded-lg overflow-hidden border border-outline-variant/30 shadow-xl' : ''} transition-opacity duration-500 ${!interactive && loadedCount === 0 ? 'opacity-0' : 'opacity-100'}`}
       style={interactive ? { backgroundColor: '#F3EEFB' } : undefined} 
     >
       <canvas

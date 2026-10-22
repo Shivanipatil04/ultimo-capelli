@@ -5,8 +5,41 @@ const nextConfig: NextConfig = {
     buildActivityPosition: 'bottom-right',
   },
   experimental: {
-    optimizePackageImports: ["@react-three/drei", "@react-three/fiber"],
-  }
+    optimizePackageImports: ["gsap", "lenis"],
+  },
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 31536000,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
+    ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/wigs/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/assets/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

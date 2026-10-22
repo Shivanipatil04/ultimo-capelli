@@ -125,7 +125,7 @@ export default function BeforeAfterHead() {
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 42vw, 25vw"
-                    priority={idx < 2}
+                    loading="lazy"
                   />
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function BeforeAfterHead() {
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 42vw, 25vw"
-                    priority={idx < 2}
+                    loading="lazy"
                   />
                 </div>
               </div>

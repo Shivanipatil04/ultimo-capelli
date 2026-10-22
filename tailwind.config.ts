@@ -62,16 +62,16 @@ const config: Config = {
         "margin-desktop": "64px"
       },
       fontFamily: {
-        "body-sm": ["Inter", "sans-serif"],
-        "label-md": ["Inter", "sans-serif"],
-        "headline-lg-mobile": ["Playfair Display", "serif"],
-        "headline-md": ["Playfair Display", "serif"],
-        "headline-lg": ["Playfair Display", "serif"],
-        "headline-sm": ["Playfair Display", "serif"],
-        "label-lg": ["Inter", "sans-serif"],
-        "display-lg": ["Playfair Display", "serif"],
-        "body-lg": ["Inter", "sans-serif"],
-        "body-md": ["Inter", "sans-serif"]
+        "body-sm": ["var(--font-inter)", "Inter", "sans-serif"],
+        "label-md": ["var(--font-inter)", "Inter", "sans-serif"],
+        "headline-lg-mobile": ["var(--font-playfair)", "Playfair Display", "serif"],
+        "headline-md": ["var(--font-playfair)", "Playfair Display", "serif"],
+        "headline-lg": ["var(--font-playfair)", "Playfair Display", "serif"],
+        "headline-sm": ["var(--font-playfair)", "Playfair Display", "serif"],
+        "label-lg": ["var(--font-inter)", "Inter", "sans-serif"],
+        "display-lg": ["var(--font-playfair)", "Playfair Display", "serif"],
+        "body-lg": ["var(--font-inter)", "Inter", "sans-serif"],
+        "body-md": ["var(--font-inter)", "Inter", "sans-serif"]
       },
       fontSize: {
         "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
